@@ -1,0 +1,22 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+asyncpg
+psycopg[binary]
+requests
+beautifulsoup4
+lxml
+APScheduler
+
+python3 -m venv .venv
+source .venv/bin/activate   # (zsh) 
+python -m pip install --upgrade pip
+
+pip install fastapi uvicorn[standard] python-dotenv
+pip install asyncpg psycopg[binary]
+pip install requests beautifulsoup4 lxml
+pip install APScheduler
+pip install aiosmtplib geopy
+
+echo "aiosmtplib" >> requirements.txt
+echo "geopy" >> requirements.txt

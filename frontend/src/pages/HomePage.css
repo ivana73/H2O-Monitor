@@ -1,0 +1,124 @@
+/* ===== Hero (blue levitating block) ===== */
+.home__hero {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--ring);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+
+  /* taller & wider hero */
+  padding: 80px 60px 260px; 
+  margin: 80px auto 0;
+  max-width: 1280px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  transform: translateY(-6px);
+}
+
+/* text block stays centered */
+.hero__text {
+  background: transparent;
+  text-align: center;
+  max-width: 900px;
+}
+
+.hero__title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.05;
+  font-size: clamp(40px, 4.4vw, 60px);
+  color: var(--ink);
+}
+
+.hero__subtitle {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+/* ===== Tiles section (inside blue hero visually) ===== */
+.home__features {
+  position: relative;
+  z-index: 2;
+  margin-top: -220px;  /* lift into hero */
+  margin-bottom: 60px;
+}
+
+.linktiles {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.linktile {
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--ring);
+  border-radius: 22px;
+  box-shadow: var(--shadow-md);
+  padding: 28px 24px;
+  color: var(--ink);
+  transition: transform .08s ease, box-shadow .15s ease, background .15s;
+}
+.linktile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(16, 38, 73, .18);
+  background: #fdfefe;
+}
+.linktile__title { margin: 0 0 8px; font-weight: 700; font-size: 20px; }
+.linktile__text { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* ===== CTA inside blue hero ===== */
+.home__cta {
+  position: relative;
+  z-index: 2;
+  margin-top: 20px;
+  margin-bottom: 80px;
+}
+
+.cta__box {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid var(--ring);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 36px 40px;
+}
+
+.cta__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .home__hero {
+    padding: 60px 24px 220px;
+    margin-top: 60px;
+  }
+  .hero__title {
+    font-size: 38px;
+  }
+  .hero__subtitle {
+    font-size: 18px;
+  }
+  .home__features {
+    margin-top: -180px;
+  }
+  .cta__box {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 16px;
+    padding: 28px;
+  }
+}
