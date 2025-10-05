@@ -4,5 +4,6 @@ A full-stack web app for visualizing and managing water network failures with re
 start frontend npm run dev
 Ctrl C to stop
 
+change nomi to Geoapify
 
 npm i lucide-react
