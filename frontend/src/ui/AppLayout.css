@@ -1,0 +1,69 @@
+/* --- App layout --- */
+.layout {
+    min-height: 100vh;          /* allow sticky footer behavior */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Header (sticky) */
+  .layout__header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e5e7eb;
+    z-index: 10;
+  }
+  .layout__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: inherit;
+  }
+  .navlinks {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .navlink {
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #6b7280;
+  }
+  .navlink.active {
+    background: #111827;
+    color: #fff;
+  }
+  
+  /* Main grows to fill space; footer is pushed down when content is short */
+  .layout__main {
+    flex: 1 0 auto;
+    padding: 20px 0;
+  }
+  
+  /* Footer always at the bottom (or after content if page is long) */
+  .layout__footer {
+    margin-top: auto;
+    border-top: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .layout__footerinner {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Container: if you already define this in base.css, remove this block here. */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  

@@ -1,0 +1,7 @@
+.mapwrap { height: 70vh; }
+.leaflet-root { height: 100%; width: 100%; }
+.mapbar { padding-top: 8px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mapbar__legend { display:flex; gap:16px; align-items:center; color:#6b7280; font-size:14px; }
+.dot { width:10px; height:10px; border-radius:999px; display:inline-block; }
+.dot--active { background:#ef4444; }
+.dot--resolved { background:#10b981; }
