@@ -42,16 +42,45 @@ export default function LoginPage() {
     setPwd(generateStrongPassword(14));
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+  
     if (mode === "login") {
-      // TODO: call /api/login
-      alert(`[${lang}] Login: ${email}`);
+      const res = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pwd }),
+      });
+    
+      const json = await res.json();
+
+      if (!json.user) {
+        alert(`${json.detail}`);
+      } else {
+        localStorage.setItem("user", JSON.stringify(json.user));
+        window.location.href = "/"; // idi na home page
+      }
     } else {
-      // TODO: call /api/register {email, pwd, locations:selected}
-      alert(`[${lang}] Register: ${email}\nLocations: ${selected.join(", ")}`);
+      const res = await fetch("http://localhost:8000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password: pwd,
+          city: "Beograd", // Replace with real city input if needed
+          areas: selected,
+          addressOfUser: address ? [address.label] : [],
+        }),
+      });
+  
+      const json = await res.json();
+      if (!res.ok) {
+        alert(`${json.detail}`);
+      } else {
+        window.location.href = "/login"; // idi na login page
+      }
     }
-  }
+  }  
 
   return (
     <div className="auth">

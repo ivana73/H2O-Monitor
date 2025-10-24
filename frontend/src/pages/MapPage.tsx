@@ -1,13 +1,13 @@
 import "./MapPage.css";
 import "leaflet/dist/leaflet.css";
 
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import type { Map as LeafletMap, LatLngBoundsExpression, DivIcon } from "leaflet";
 import L from "leaflet";
 import { useI18n } from "../i18n.js";
 
-// --- Fix Leaflet marker icons with Vite bundling ---
+// Fix Leaflet icons (for Vite)
 import marker2x from "leaflet/dist/images/marker-icon-2x.png";
 import marker1x from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
@@ -17,30 +17,25 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// --- Belgrade view + bounds ---
+// Belgrade center and map bounds
 const BELGRADE_CENTER: [number, number] = [44.8125, 20.4612];
 const BELGRADE_BOUNDS: LatLngBoundsExpression = [
   [44.68, 20.20], // SW
   [44.95, 20.65], // NE
 ];
 
-// Example data (replace with API later)
 type Failure = {
-  id: string;
+  id: number;
   lat: number;
   lon: number;
-  title: string;
-  status: "active" | "resolved";
-  desc?: string;
+  address: string;
+  description: string;
+  status: "active" | "resolved" | "planned";
 };
-const SAMPLE: Failure[] = [
-  { id: "1", lat: 44.8195, lon: 20.4643, title: "Pukla cev – Vračar", status: "active", desc: "Nizak pritisak, prijavljeno jutros" },
-  { id: "2", lat: 44.8041, lon: 20.4144, title: "Radovi – Savski venac", status: "resolved", desc: "Završeno juče" },
-];
 
-// Simple, lightweight dot icon
-function dot(status: "active" | "resolved"): DivIcon {
-  const color = status === "active" ? "#ef4444" : "#10b981";
+function dot(status: "active" | "resolved" | "planned"): DivIcon {
+  const color =
+    status === "active" ? "#ef4444" : status === "resolved" ? "#10b981" : "#f59e0b";
   return new L.DivIcon({
     className: "marker-dot",
     html: `<span style="display:inline-block;width:12px;height:12px;border-radius:999px;background:${color};box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(0,0,0,.15)"></span>`,
@@ -49,21 +44,41 @@ function dot(status: "active" | "resolved"): DivIcon {
   });
 }
 
-// Safe way to get the Leaflet Map instance (no apiKey usage here)
 function AssignMapRef({ onReady }: { onReady: (m: LeafletMap) => void }) {
   const map = useMap();
-  useEffect(() => { onReady(map); }, [map, onReady]);
+  useEffect(() => {
+    onReady(map);
+  }, [map, onReady]);
   return null;
 }
 
 export default function MapPage() {
   const { t } = useI18n();
   const mapRef = useRef<LeafletMap | null>(null);
+  const [failures, setFailures] = useState<Failure[]>([]);
 
-  // Read the key ONCE here. Do not use inside child helpers.
-  const apiKey = import.meta.env.VITE_GEOAPIFY_KEY as string | undefined;
+  const apiKey = import.meta.env.VITE_GEOAPIFY_KEY;
 
-  // If there’s no key, do not render the map (no fallback).
+  useEffect(() => {
+    fetch("http://localhost:8000/incidents")
+      .then((res) => res.json())
+      .then((data) => {
+        const clean = data
+          .filter((r: any) => typeof r.lat === "number" && typeof r.lon === "number")
+          .map((r: any) => ({
+            id: r.id,
+            lat: r.lat,
+            lon: r.lon,
+            address: r.address_text,
+            description: r.description,
+            status: r.status,
+          }));
+        console.log("[filtered incidents]", clean);
+        setFailures(clean);
+      })
+      .catch((err) => console.error("Failed to fetch incidents", err));
+  }, []);
+
   if (!apiKey) {
     return (
       <div className="container" style={{ padding: "16px 0" }}>
@@ -85,7 +100,6 @@ export default function MapPage() {
         <h1 className="mapbar__title">{t("map_title")}</h1>
         <div className="mapbar__legend">
           <span className="dot dot--active" /> {t("map_legend_active")}
-          <span className="dot dot--resolved" /> {t("map_legend_resolved")}
         </div>
       </div>
 
@@ -104,10 +118,8 @@ export default function MapPage() {
           dragging
           preferCanvas={false}
         >
-          {/* Assign map instance to ref */}
           <AssignMapRef onReady={(m) => (mapRef.current = m)} />
 
-          {/* Geoapify tiles ONLY (no fallback) */}
           <TileLayer
             url={`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${apiKey}`}
             attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, &copy; <a href="https://www.geoapify.com/">Geoapify</a>'
@@ -117,17 +129,18 @@ export default function MapPage() {
             detectRetina={false}
           />
 
-          {SAMPLE.map((f) => (
-            <Marker key={f.id} position={[f.lat, f.lon]} icon={dot(f.status)}>
-              <Popup>
-                <strong>{f.title}</strong>
-                {f.desc && <div style={{ marginTop: 4 }}>{f.desc}</div>}
-                <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
-                  {f.status === "active" ? t("map_legend_active") : t("map_legend_resolved")}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {failures.map((f) =>
+            Number.isFinite(f.lat) && Number.isFinite(f.lon) ? (
+              <Marker key={f.id} position={[f.lat, f.lon]} icon={dot(f.status)}>
+                <Popup>
+                  <strong>{f.address}</strong>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+                    {t("map_legend_active")}
+                  </div>
+                </Popup>
+              </Marker>
+            ) : null
+          )}
         </MapContainer>
       </div>
     </div>

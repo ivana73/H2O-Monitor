@@ -10,11 +10,11 @@ import { LanguageProvider } from "./i18n.js";
 import AppLayout from "./ui/AppLayout.js";
 
 import HomePage from "./pages/HomePage.js";
-// import MapPage from "./pages/MapPage.js";
-// import ReportPage from "./pages/ReportPage.js";
+import ReportPage from "./pages/ReportPage.js";
 import LoginPage from "./pages/LoginPage.js";
 import MapPage from "./pages/MapPage.js";
 // import AdminPage from "./pages/AdminPage.js";
+import AreasChangePage from './pages/areaChange.js';
 
 const router = createBrowserRouter([
   {
@@ -23,8 +23,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "map", element: <MapPage /> },
-      // { path: "report", element: <ReportPage /> },
+      { path: "report", element: <ReportPage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "areasChange", element: <AreasChangePage /> },
       // { path: "admin", element: <AdminPage /> },
     ],
   },

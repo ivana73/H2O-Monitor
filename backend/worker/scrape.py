@@ -7,6 +7,10 @@ try:
     from zoneinfo import ZoneInfo  # py3.9+
 except Exception:
     ZoneInfo = None
+import requests
+import os
+
+VITE_GEOAPIFY_KEY = "07ed2ecad89548a6bc6c61b1597cda4c"
 
 HEADERS = {"User-Agent": "H2O-Monitor/1.0 (contact: you@example.com)"}
 
@@ -36,6 +40,26 @@ CONTENT_CANDIDATES = [
     ".elementor-accordion-content",
 ]
 
+def geocode_address(address):
+    url = "https://api.geoapify.com/v1/geocode/search"
+    params = {
+        "text": f"Beograd, Serbia, {address}",
+        "apiKey": VITE_GEOAPIFY_KEY
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        if data["features"]:
+            coords = data["features"][0]["geometry"]["coordinates"]
+            return coords[1], coords[0]  # lat, lon
+    except Exception as e:
+        print(f"Geocoding failed: {e}")
+
+    return None, None
+
 def _belgrade_today() -> tuple[int, int, int]:
     now = datetime.now(ZoneInfo("Europe/Belgrade")) if ZoneInfo else datetime.now()
     return now.day, now.month, now.year
@@ -60,6 +84,7 @@ def _build_date_regex_fuzzy(day: int, mon: int, year: int) -> re.Pattern:
     return re.compile(base + tail, flags=re.U | re.I)
 
 def _find_date_title(soup: BeautifulSoup, date_re: re.Pattern):
+    print("Geoapify key:", VITE_GEOAPIFY_KEY)
     # Search candidate “title” elements first
     for sel in TITLE_CANDIDATES:
         for el in soup.select(sel):

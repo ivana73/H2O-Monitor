@@ -22,5 +22,22 @@ CREATE TABLE IF NOT EXISTS incident (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   lan DOUBLE PRECISION,
-  lon DOUBLE PRECISION
+  lon DOUBLE PRECISION,
+  seen boolean DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS "user" (
+    id BIGSERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    city TEXT NOT NULL,
+    areas TEXT[],
+    addressOfUser TEXT[]
+);
+
+CREATE TABLE IF NOT EXISTS reportedIncident (
+    id BIGSERIAL PRIMARY KEY,
+    email TEXT NOT NULL,
+    reportedDescription TEXT NOT NULL,
+    reportedAddress TEXT NOT NULL
 );

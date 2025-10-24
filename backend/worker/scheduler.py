@@ -1,15 +1,23 @@
 # backend/worker/scheduler.py
-import os, zoneinfo, logging, asyncio
+import os, psycopg, zoneinfo, logging, asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from .scrape import SOURCES, fetch, section_hash
+from .scrape import SOURCES, fetch, section_hash, geocode_address
 from .dbio import load_cache, save_cache, upsert_incident
 from .parser import parse
 
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 TZ = os.getenv("APP_TZ", "Europe/Belgrade")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://h2o:h2o@localhost:5432/h2o")
+
+def get_conn():
+    return psycopg.connect(DATABASE_URL)
 
 async def run_scrape_once():
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("UPDATE incident SET seen = False")
+        conn.commit()
     changed_any = False
     for src in SOURCES:
         cache = load_cache(src.url)
@@ -31,23 +39,31 @@ async def run_scrape_once():
             logging.warning(f"[{src.name}] No date panel found (today). Skipping insert.")
             return
 
-
         items = parse(src.name, text)
         inserted, updated = 0, 0
+
         for it in items:
+            address = (it.get("address_text") or "").strip()
+            lat, lon = None, None
+            if address:
+                lat, lon = geocode_address(address)
             is_new = upsert_incident(
                 src.name, src.url,
                 (it.get("title") or "").strip(),
                 (it.get("description") or "").strip(),
-                it.get("address_text"),
+                address,
+                lat,
+                lon,
             )
-            if is_new: inserted += 1
+            if is_new: inserted += 1 
             else:      updated  += 1
 
         changed_any = changed_any or (inserted + updated > 0)
         save_cache(src.url, new_etag, new_lm, h)
         logging.info(f"[{src.name}] inserted={inserted} updated={updated}")
-
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM incident WHERE seen = False")
+        conn.commit()
     if changed_any:
         logging.info("Changes detected → (email would be sent here).")
 
@@ -64,7 +80,7 @@ async def main():
     )
     scheduler.start()
 
-    # Optionally run one scrape at startup (comment out if you don't want it)
+    # Optionally run one scrape at startup
     await run_scrape_once()
 
     logging.info("Scheduler started. Jobs: %s", scheduler.get_jobs())

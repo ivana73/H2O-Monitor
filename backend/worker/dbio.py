@@ -22,19 +22,25 @@ def save_cache(url: str, etag: str | None, last_modified: str | None, content_ha
         """, (url, etag, last_modified, content_hash))
         conn.commit()
 
-def upsert_incident(src: str, src_url: str, title: str, description: str, address_text: str | None):
-    # dedupe on a stable hash of source + title + address
+def upsert_incident(src: str, src_url: str, title: str, description: str, address_text: str | None, lat: float | None, lon: float | None):
     import hashlib
     key = f"{src}|{title}|{address_text or ''}"
     dh = hashlib.sha1(key.encode("utf-8")).hexdigest()
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
-        INSERT INTO incident (source, source_url, title, description, address_text, dedupe_hash)
-        VALUES (%s,%s,%s,%s,%s,%s)
+        INSERT INTO incident (
+            source, source_url, title, description,
+            address_text, dedupe_hash, lat, lon, seen
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (dedupe_hash)
-        DO UPDATE SET description = EXCLUDED.description, updated_at = now()
+        DO UPDATE SET
+            description = EXCLUDED.description,
+            updated_at = now(),
+            seen = True
         RETURNING (xmax = 0) AS inserted
-        """, (src, src_url, title, description, address_text, dh))
+        """, (src, src_url, title, description, address_text, dh, lat, lon, True))
+
         inserted = cur.fetchone()[0]
         conn.commit()
-        return inserted  # True if new row, False if updated
+        return inserted
