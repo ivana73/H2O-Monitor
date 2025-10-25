@@ -1,0 +1,2 @@
+[console_scripts]
+cyrtranslit = cyrtranslit.cyrtranslit:main

@@ -2,6 +2,8 @@
 import os, psycopg, zoneinfo, logging, asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+
+from worker.notifier import notify_users_about_incidents, testNot
 from .scrape import SOURCES, fetch, section_hash, geocode_address
 from .dbio import load_cache, save_cache, upsert_incident
 from .parser import parse
@@ -41,22 +43,39 @@ async def run_scrape_once():
 
         items = parse(src.name, text)
         inserted, updated = 0, 0
+        new_incidents = []
 
         for it in items:
             address = (it.get("address_text") or "").strip()
             lat, lon = None, None
             if address:
                 lat, lon = geocode_address(address)
+           
+            incident = {
+                "title": (it.get("title") or "").strip(),
+                "description": (it.get("description") or "").strip(),
+                "address_text": address,
+                "lat": lat,
+                "lon": lon
+            }
+
             is_new = upsert_incident(
                 src.name, src.url,
-                (it.get("title") or "").strip(),
-                (it.get("description") or "").strip(),
-                address,
-                lat,
-                lon,
+                incident["title"],
+                incident["description"],
+                incident["address_text"],
+                incident["lat"],
+                incident["lon"],
             )
-            if is_new: inserted += 1 
-            else:      updated  += 1
+            if is_new: 
+                inserted += 1 
+                new_incidents.append(incident)
+            else: 
+                updated  += 1
+       
+        if new_incidents:
+            await notify_users_about_incidents(new_incidents)        
+        # await testNot()
 
         changed_any = changed_any or (inserted + updated > 0)
         save_cache(src.url, new_etag, new_lm, h)
