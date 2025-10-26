@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import Body, FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg, os, bcrypt
 from dotenv import load_dotenv
 import re
 from pydantic import BaseModel, EmailStr
+
+from worker.scrape import geocode_address
 
 # 1) load .env so DATABASE_URL is available
 load_dotenv()
@@ -134,6 +136,48 @@ async def report_incident(payload: reportedIncidentPayload):
             VALUES ($1, $2, $3)
         """, payload.email, payload.reportedDescription, payload.reportedAddress)
 
+        return {"ok": True}
+    finally:
+        await conn.close()
+
+@app.get("/reportsFetch")
+async def reportsFetch():
+    conn = await asyncpg.connect(DATABASE_URL)
+    try:
+        rows = await conn.fetch(
+            """
+            SELECT *
+            FROM reportedIncident
+            ORDER BY id DESC
+            LIMIT 500
+            """
+        )
+        return [dict(r) for r in rows]
+    finally:
+        await conn.close()        
+
+@app.post("/admin/approve_incident")
+async def approve_incident(data: dict = Body(...)):
+    conn = await asyncpg.connect(DATABASE_URL)
+    lat, lon = geocode_address(data["reportedaddress"])
+    try:
+        # Insert into main incident table
+        await conn.execute("""
+            INSERT INTO incident (title, description, address_text, lat, lon, source, source_url)
+            VALUES ($1, $2, $3, $4, $5, 'user', 'user')
+        """, "Korisnička prijava", data["reporteddescription"], data["reportedaddress"], lat, lon)
+
+        # Delete original
+        await conn.execute("DELETE FROM reportedIncident WHERE email = $1 AND reportedaddress = $2", data["email"], data["reportedaddress"])
+        return {"ok": True}
+    finally:
+        await conn.close()
+
+@app.post("/admin/reject_incident")
+async def reject_incident(data: dict = Body(...)):
+    conn = await asyncpg.connect(DATABASE_URL)
+    try:
+        await conn.execute("DELETE FROM reportedIncident WHERE email = $1 AND reportedaddress = $2", data["email"], data["reportedaddress"])
         return {"ok": True}
     finally:
         await conn.close()

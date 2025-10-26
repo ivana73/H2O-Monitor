@@ -13,7 +13,7 @@ import HomePage from "./pages/HomePage.js";
 import ReportPage from "./pages/ReportPage.js";
 import LoginPage from "./pages/LoginPage.js";
 import MapPage from "./pages/MapPage.js";
-// import AdminPage from "./pages/AdminPage.js";
+import AdminPage from "./pages/AdminPage.js";
 import AreasChangePage from './pages/areaChange.js';
 
 const router = createBrowserRouter([
@@ -26,7 +26,7 @@ const router = createBrowserRouter([
       { path: "report", element: <ReportPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "areasChange", element: <AreasChangePage /> },
-      // { path: "admin", element: <AdminPage /> },
+      { path: "admin", element: <AdminPage /> },
     ],
   },
 ]);

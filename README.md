@@ -33,6 +33,12 @@ docker exec -it h2o_db psql -U h2o -d h2o -c 'CREATE TABLE IF NOT EXISTS reporte
 
 docker exec -it h2o_db psql -U h2o -d h2o -c "ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS city TEXT NOT NULL, ADD COLUMN IF NOT EXISTS areas TEXT, ADD COLUMN IF NOT EXISTS addressOfUser TEXT[];"
 
+"
+ docker exec -it h2o_db psql -U h2o -d h2o -c "SELECT *
+            FROM reportedIncident
+            ORDER BY id DESC
+            LIMIT 500;"
+
 
 
 cd backend
