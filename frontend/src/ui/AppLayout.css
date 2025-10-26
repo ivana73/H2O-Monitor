@@ -1,69 +1,85 @@
-/* --- App layout --- */
 .layout {
-    min-height: 100vh;          /* allow sticky footer behavior */
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* Header (sticky) */
-  .layout__header {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid #e5e7eb;
-    z-index: 10;
-  }
-  .layout__nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-  }
-  .brand {
-    font-weight: 700;
-    text-decoration: none;
-    color: inherit;
-  }
-  .navlinks {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-  .navlink {
-    padding: 8px 10px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: #6b7280;
-  }
-  .navlink.active {
-    background: #111827;
-    color: #fff;
-  }
-  
-  /* Main grows to fill space; footer is pushed down when content is short */
-  .layout__main {
-    flex: 1 0 auto;
-    padding: 20px 0;
-  }
-  
-  /* Footer always at the bottom (or after content if page is long) */
-  .layout__footer {
-    margin-top: auto;
-    border-top: 1px solid #e5e7eb;
-    background: #fff;
-  }
-  .layout__footerinner {
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  /* Container: if you already define this in base.css, remove this block here. */
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 16px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* HEADER */
+.layout__header {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(16, 38, 73, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.layout__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--brand);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  transition: color 0.15s ease;
+}
+.brand:hover {
+  color: #075985; /* darker sky tone */
+}
+
+.navlinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.navlink {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.navlink:hover {
+  background: #f1f5f9;
+}
+.navlink.active {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* MAIN */
+.layout__main {
+  flex: 1;
+  width: 100%;
+  padding: 40px 0;
+}
+
+/* FOOTER */
+.layout__footer {
+  background: #fff;
+  border-top: 1px solid var(--ring);
+  box-shadow: 0 -2px 10px rgba(16, 38, 73, 0.05);
+  padding: 16px 0;
+}
+.layout__footerinner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 14px;
+}
+.footer__links a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 12px;
+}
+.footer__links a:hover {
+  text-decoration: underline;
+}

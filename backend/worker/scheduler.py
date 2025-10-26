@@ -67,9 +67,9 @@ async def run_scrape_once():
                 incident["lat"],
                 incident["lon"],
             )
+            new_incidents.append(incident)
             if is_new: 
                 inserted += 1 
-                new_incidents.append(incident)
             else: 
                 updated  += 1
        

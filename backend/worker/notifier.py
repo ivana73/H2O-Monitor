@@ -9,6 +9,11 @@ import aiosmtplib
 from geopy.distance import geodesic
 from unidecode import unidecode
 import cyrtranslit
+from typing import Dict, Tuple, Optional
+from geopy.distance import geodesic
+import re
+
+from worker.scrape import geocode_address
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://h2o:h2o@localhost:5432/h2o")
@@ -21,14 +26,13 @@ async def send_email_to(email: str, incidents: list[dict]):
     msg = EmailMessage()
     msg["From"] = EMAIL_SENDER
     msg["To"] = email
-    msg["Subject"] = "🛠 Novi kvarovi u vašoj oblasti"
+    msg["Subject"] = "Nestanak vode u tvojoj prijavljenoj oblasti"
     print("🧪 RRRRunning testNot")
     body = "Prijavljeni su novi kvarovi:\n\n"
     for inc in incidents:
         body += f""" Lokacija: {inc.get('address_text', 'Nepoznata lokacija')}
-📝 Opis: {inc.get('description', 'nema opisa')}
-
-"""
+        Opis: {inc.get('description', 'nema opisa')}
+        """
 
     body += "\nH2O Monitor tim"
     msg.set_content(body)
@@ -49,31 +53,48 @@ async def testNot():
     #     "description": "Test incident from CLI"
     # })
 
-def incident_matches_user(user: Dict, incident: Dict, threshold_km: float = 0.5) -> bool:
+def incident_matches_user(user: Dict, incident: Dict, threshold_km: float = 0.7) -> bool:
     address = incident.get("address_text")
 
     address_norm = normalize(address)
     area = address_norm.split(",")[0]
     print(area)
-    latin = cyrtranslit.to_latin(area)
+    latinArea = cyrtranslit.to_latin(area)
 
     user_areas = [normalize(a) for a in (user.get("areas") or [])]
     user_addrs = [normalize(a) for a in (user.get("addressofuser") or [])]
 
-    if latin in user_areas or address_norm in user_addrs:
+    if latinArea in user_areas or address_norm in user_addrs:
         return True
-
-    # Optional geospatial proximity match
+    
     if incident.get("lat") and incident.get("lon"):
-        for user_coord in user.get("coords", []):
-            if user_coord and "lat" in user_coord and "lon" in user_coord:
-                dist = geodesic(
-                    (incident["lat"], incident["lon"]),
-                    (user_coord["lat"], user_coord["lon"])
-                ).km
-                if dist <= threshold_km:
-                    return True
+        print(incident.get("lat"))
+
+        for addr_text in user.get("addressofuser", []):
+            if not addr_text:
+                continue
+
+            addr_text = str(addr_text).strip().strip("{}\"' ")
+            addr_text = addr_text.replace("\n", " ").strip()
+            
+            cyrilic_addr = cyrtranslit.to_cyrillic(addr_text)   
+
+            lat_user = lon_user = None
+            lat, lon = geocode_address(cyrilic_addr)
+            if lat is not None and lon is not None:
+                lat_user, lon_user = lat, lon
+                
+
+            # print(lat_user, lon_user)
+            # print(float(incident["lat"]), float(incident["lon"]))
+            dist = geodesic(
+                (float(incident["lat"]), float(incident["lon"])),
+                (lat_user, lon_user)
+            ).km
+            if dist <= threshold_km:
+                return True
     return False
+
 
 async def notify_users_about_incidents(incidents: List[Dict]):
     if not incidents:
@@ -88,8 +109,7 @@ async def notify_users_about_incidents(incidents: List[Dict]):
             user_obj = {
                 "email": user["email"],
                 "areas": user["areas"],
-                "addressofuser": user["addressofuser"],
-                "coords": []
+                "addressofuser": user["addressofuser"]
             }
 
             matched = []
@@ -99,9 +119,7 @@ async def notify_users_about_incidents(incidents: List[Dict]):
 
             if matched:
                 users_to_notify[user["email"]] = matched
-        print("222222")
         for email, matched_incidents in users_to_notify.items():
-            print("333333")
             await send_email_to(email, matched_incidents)
 
     finally:
