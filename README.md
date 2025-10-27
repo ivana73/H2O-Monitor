@@ -39,7 +39,7 @@ docker exec -it h2o_db psql -U h2o -d h2o -c "ALTER TABLE \"user\" ADD COLUMN IF
             ORDER BY id DESC
             LIMIT 500;"
 
-
+docker exec -it h2o_db psql -U h2o -d h2o -c "delete FROM \"user\";"
 
 cd backend
 source .venv/bin/activate

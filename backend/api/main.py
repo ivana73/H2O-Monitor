@@ -1,9 +1,11 @@
+from ast import Dict, List
 from fastapi import Body, FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import asyncpg, os, bcrypt
 from dotenv import load_dotenv
 import re
 from pydantic import BaseModel, EmailStr
+from worker.notifier import notify_newUser_about_incidents
 
 from worker.scrape import geocode_address
 
@@ -107,10 +109,22 @@ async def register(payload: RegisterPayload):
             INSERT INTO "user" (email, password_hash, city, areas, addressOfUser)
             VALUES ($1, $2, $3, $4, $5)
         """, payload.email, password_hash, payload.city, payload.areas, payload.addressOfUser)
+        
+        rows = await conn.fetch(
+                """
+                SELECT *
+                FROM incident
+                ORDER BY created_at DESC
+                LIMIT 500
+                """
+            )
+        ld = [dict(r) for r in rows]
 
         return {"ok": True, "message": "User registered"}
     finally:
         await conn.close()
+        await notify_newUser_about_incidents(payload.email, ld)
+
 
 @app.get("/__debug/schema")
 async def debug_schema():
