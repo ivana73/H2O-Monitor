@@ -60,24 +60,34 @@ export default function MapPage() {
 
   const apiKey = import.meta.env.VITE_GEOAPIFY_KEY;
 
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/incidents`)
-    .then((res) => res.json())
-      .then((data) => {
-        const clean = data
-          .filter((r: any) => typeof r.lat === "number" && typeof r.lon === "number")
-          .map((r: any) => ({
-            id: r.id,
-            lat: r.lat,
-            lon: r.lon,
-            address: r.address_text,
-            description: r.description,
-            status: r.status,
-          }));
-        console.log("[filtered incidents]", clean);
-        setFailures(clean);
-      })
-      .catch((err) => console.error("Failed to fetch incidents", err));
+   useEffect(() => {
+    // 🔹 Demo incidents only (no fetch)
+    setFailures([
+      {
+        id: 1,
+        lat: 44.8128,
+        lon: 20.4599,
+        address: "Knez Mihailova 5",
+        description: "Pipe burst - partial outage in the center.",
+        status: "active",
+      },
+      {
+        id: 2,
+        lat: 44.8205,
+        lon: 20.4082,
+        address: "New Belgrade Pump Station",
+        description: "Scheduled maintenance - reduced pressure.",
+        status: "planned",
+      },
+      {
+        id: 3,
+        lat: 44.848,
+        lon: 20.4105,
+        address: "Zemun Riverside",
+        description: "Incident resolved, full service restored.",
+        status: "resolved",
+      },
+    ]);
   }, []);
 
   if (!apiKey) {
