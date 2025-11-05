@@ -77,7 +77,7 @@ export default function MapPage() {
         lon: 20.4082,
         address: "New Belgrade Pump Station",
         description: "Scheduled maintenance - reduced pressure.",
-        status: "planned",
+        status: "active",
       },
       {
         id: 3,
@@ -85,7 +85,7 @@ export default function MapPage() {
         lon: 20.4105,
         address: "Zemun Riverside",
         description: "Incident resolved, full service restored.",
-        status: "resolved",
+        status: "active",
       },
     ]);
   }, []);
