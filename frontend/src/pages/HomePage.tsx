@@ -60,7 +60,7 @@ export default function HomePage() {
           <Link className="btn btn--primary" to="/report">{t("cta_button")}</Link>
           )}
           {mode === "anonymous" && (
-          <Link className="btn btn--primary" to="/report">{t("cta_button")}</Link>
+          <Link className="btn btn--primary" to="/login">{t("cta_button")}</Link>
           )}
         </div>
       </section>
