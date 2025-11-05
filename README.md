@@ -1,6 +1,9 @@
 # H2O-Monitor
 A full-stack web app for visualizing and managing water network failures with real-time updates and role-based access.
 
+Demo: Here is a link to the demo version of the website, deployed from the demo branch. It provides a preview of the full application and shows how it appears to an unregistered user. The map includes sample (dummy) water incident data. https://h2o-monitor.onrender.com/
+
+Full: Start commands:
 start frontend npm run dev
 Ctrl C to stop
 
