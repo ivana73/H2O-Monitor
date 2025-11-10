@@ -10,7 +10,7 @@ OPS = [
 TIME_RE = re.compile(r"До\s+(\d{1,2})[:.](\d{2})", flags=re.U | re.I)
 OPS_RE = re.compile(r"(?P<opstina>" + "|".join(map(re.escape, OPS)) + r")\s*:\s*", flags=re.U)
 
-# markers where we should STOP (we only want the outages list, not tankers or share widgets)
+# markers where to stop
 STOP_MARKERS = [
     "Распоред аутоцистерни", "Распоред цистерни",  # tanker schedule
     "Подели садржај", "Подели на", "Share on", "Podeli",  # share widgets (various langs)
