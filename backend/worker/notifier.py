@@ -49,11 +49,7 @@ Opis: {cyrtranslit.to_latin(inc.get('description', 'nema opisa'))}
     )
 
 async def testNot():
-    print("🧪 Running testNot")
-    # await send_email_to("imarjanovic733@gmail.com", {
-    #     "address_text": "Testovačka 1, Palilula",
-    #     "description": "Test incident from CLI"
-    # })
+    print("Running testNot")
 
 def incident_matches_user(user: Dict, incident: Dict, threshold_km: float = 0.7) -> bool:
     address = incident.get("address_text")
