@@ -9,17 +9,15 @@ from worker.notifier import notify_newUser_about_incidents
 
 from worker.scrape import geocode_address
 
-# 1) load .env so DATABASE_URL is available
 load_dotenv()
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
-
+# host or docker
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://h2o:h2o@localhost:5432/h2o")
 
 app = FastAPI(title="H2O-Monitor API")
 
-# tiny log so you can confirm target DB at startup (password masked)
 def _mask_url(url: str) -> str:
     return re.sub(r'//([^:]+):[^@]+@', r'//\1:***@', url)
 
